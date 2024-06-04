@@ -66,7 +66,7 @@ if predict_button:
         # Make prediction
         prediction = Model.predict([Features])[0]
         
-        gif = get_img_as_base64("crops.gif")
+        gif = get_img_as_base64("crop.gif")
         page_bg_gif = f"""
         <style>
         [data-testid="stAppViewContainer"] > .main {{
@@ -106,7 +106,7 @@ if predict_button:
         st.experimental_rerun()
 else:
     st.markdown(f"<h2 class='animated-text'>Crop Yield Prediction</h2>", unsafe_allow_html=True)
-    img = get_img_as_base64("crops.jpg")
+    img = get_img_as_base64("crop.jpg")
     page_bg_img = f"""
     <style>
     [data-testid="stAppViewContainer"] > .main {{
