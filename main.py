@@ -58,48 +58,55 @@ if predict_button:
     # Create the feature vector
     Features = [Average_Rain_Fall_mm_per_year, Pesticides_Tonnes, Avg_Temp] + Item_encoded
     
-    # Load model
-    Model = pickle.load(open('ind_yield.pkl', 'rb'))
-    
-    # Make prediction
-    prediction = Model.predict([Features])[0]
-    
-    gif = get_img_as_base64("crop.gif")
-    page_bg_gif = f"""
-    <style>
-    [data-testid="stAppViewContainer"] > .main {{
-    background-image: url("data:image/gif;base64,{gif}");
-    background-size: cover;
-    background-position: center;
-    margin-top: -100px;
-    }}
-    [data-testid="stHeader"] {{
-    background: rgba(0,0,0,0);
-    }}
-    .animated-text {{
-        font-size: 3rem;
-        font-family: 'Courier New', Courier, monospace;
-        font-weight: bold;
-        animation: colorchange 2s infinite;
-        text-align: center;
-    }}
-    @keyframes colorchange {{
-        0% {{ color: #FF5722; }}
-        25% {{ color: #4CAF50; }}
-        50% {{ color: #FFC107; }}
-        75% {{ color: #00BCD4; }}
-        100% {{ color: #FF5722; }}
-    }}
-    </style>
-    """
-    st.markdown(page_bg_gif, unsafe_allow_html=True)
-    st.markdown(f"<h2 class='animated-text'>Predicted Crop Yield: {prediction:.2f} kg</h2>", unsafe_allow_html=True)
+    try:
+        # Load model
+        with open('ind_yield.pkl', 'rb') as file:
+            Model = pickle.load(file)
+        
+        # Make prediction
+        prediction = Model.predict([Features])[0]
+        
+        gif = get_img_as_base64("crops.gif")
+        page_bg_gif = f"""
+        <style>
+        [data-testid="stAppViewContainer"] > .main {{
+        background-image: url("data:image/gif;base64,{gif}");
+        background-size: cover;
+        background-position: center;
+        margin-top: -100px;
+        }}
+        [data-testid="stHeader"] {{
+        background: rgba(0,0,0,0);
+        }}
+        .animated-text {{
+            font-size: 3rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            animation: colorchange 2s infinite;
+            text-align: center;
+        }}
+        @keyframes colorchange {{
+            0% {{ color: #FF5722; }}
+            25% {{ color: #4CAF50; }}
+            50% {{ color: #FFC107; }}
+            75% {{ color: #00BCD4; }}
+            100% {{ color: #FF5722; }}
+        }}
+        </style>
+        """
+        st.markdown(page_bg_gif, unsafe_allow_html=True)
+        st.markdown(f"<h2 class='animated-text'>Predicted Crop Yield: {prediction:.2f} kg</h2>", unsafe_allow_html=True)
+        
+    except FileNotFoundError:
+        st.error("Model file not found. Please ensure 'ind_yield.pkl' is in the correct path.")
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
     
     if back_button:
         st.experimental_rerun()
 else:
     st.markdown(f"<h2 class='animated-text'>Crop Yield Prediction</h2>", unsafe_allow_html=True)
-    img = get_img_as_base64("crop.jpg")
+    img = get_img_as_base64("crops.jpg")
     page_bg_img = f"""
     <style>
     [data-testid="stAppViewContainer"] > .main {{
