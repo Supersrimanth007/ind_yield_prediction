@@ -1,136 +1,32 @@
-import streamlit as st
+from flask import Flask, request, jsonify
 import pickle
 import numpy as np
-import base64
 
-# Set up the sidebar and user inputs
-st.sidebar.title("Crop Yield Prediction")
+app = Flask(__name__)
 
-# Average Rain Fall
-Average_Rain_Fall_mm_per_year = st.sidebar.number_input(
-    "Average Rain Fall (mm per year)",
-    min_value=1083.0, 
-    max_value=1083.0, 
-    value=1083.0,
-    step=0.0
-)
+# Load the model
+with open('ind_yield.pkl', 'rb') as file:
+    Model = pickle.load(file)
 
-# Pesticides Tonnes
-Pesticides_Tonnes = st.sidebar.number_input(
-    "Pesticides (Tonnes)",
-    min_value=14485.33, 
-    max_value=75000.0, 
-    value=48459.04
-)
+@app.route('/predict', methods=['POST'])
+def predict():
+    data = request.get_json()
+    features = [
+        data['Average_Rain_Fall_mm_per_year'],
+        data['Pesticides_Tonnes'],
+        data['Avg_Temp']
+    ]
+    # One hot encoding for Item
+    item_dict = {
+        'Cassava': 0, 'Maize': 1, 'Potatoes': 2, 'Rice, paddy': 3,
+        'Sorghum': 4, 'Soybeans': 5, 'Sweet potatoes': 6, 'Wheat': 7
+    }
+    item_encoded = [0] * 8
+    item_encoded[item_dict[data['Item']]] = 1
+    features.extend(item_encoded)
 
-# Avg Temp
-Avg_Temp = st.sidebar.number_input(
-    "Average Temperature (°C)",
-    min_value=23.26, 
-    max_value=28.85, 
-    value=26.01
-)
+    prediction = Model.predict([features])[0]
+    return jsonify({'predicted_yield': prediction})
 
-# Item
-Item = st.sidebar.selectbox(
-    "Crop Type", 
-    ["Cassava", "Maize", "Potatoes", "Rice, paddy", "Sorghum", 
-     "Soybeans", "Sweet potatoes", "Wheat"]
-)
-
-# One hot encoding for Item
-Item_dict = {'Cassava': 0, 'Maize': 1, 'Potatoes': 2, 'Rice, paddy': 3, 'Sorghum': 4,
-             'Soybeans': 5, 'Sweet potatoes': 6, 'Wheat': 7}
-
-Item_encoded = [0] * 8
-Item_encoded[Item_dict[Item]] = 1
-
-# Load the saved model
-predict_button = st.sidebar.button("Predict Crop Yield")
-back_button = st.sidebar.button("Make Another Prediction")
-
-def get_img_as_base64(file):
-    with open(file, "rb") as f:
-        data = f.read()
-    return base64.b64encode(data).decode()
-
-if predict_button:
-    # Create the feature vector
-    Features = [Average_Rain_Fall_mm_per_year, Pesticides_Tonnes, Avg_Temp] + Item_encoded
-    
-    try:
-        # Load model
-        with open('ind_yield.pkl', 'rb') as file:
-            Model = pickle.load(file)
-        
-        # Make prediction
-        prediction = Model.predict([Features])[0]
-        
-        gif = get_img_as_base64("crop.gif")
-        page_bg_gif = f"""
-        <style>
-        [data-testid="stAppViewContainer"] > .main {{
-        background-image: url("data:image/gif;base64,{gif}");
-        background-size: cover;
-        background-position: center;
-        margin-top: -100px;
-        }}
-        [data-testid="stHeader"] {{
-        background: rgba(0,0,0,0);
-        }}
-        .animated-text {{
-            font-size: 3rem;
-            font-family: 'Courier New', Courier, monospace;
-            font-weight: bold;
-            animation: colorchange 2s infinite;
-            text-align: center;
-        }}
-        @keyframes colorchange {{
-            0% {{ color: #FF5722; }}
-            25% {{ color: #4CAF50; }}
-            50% {{ color: #FFC107; }}
-            75% {{ color: #00BCD4; }}
-            100% {{ color: #FF5722; }}
-        }}
-        </style>
-        """
-        st.markdown(page_bg_gif, unsafe_allow_html=True)
-        st.markdown(f"<h2 class='animated-text'>Predicted Crop Yield: {prediction:.2f} kg</h2>", unsafe_allow_html=True)
-        
-    except FileNotFoundError:
-        st.error("Model file not found. Please ensure 'ind_yield.pkl' is in the correct path.")
-    except Exception as e:
-        st.error(f"An error occurred: {e}")
-    
-    if back_button:
-        st.experimental_rerun()
-else:
-    st.markdown(f"<h2 class='animated-text'>Crop Yield Prediction</h2>", unsafe_allow_html=True)
-    img = get_img_as_base64("crop.jpg")
-    page_bg_img = f"""
-    <style>
-    [data-testid="stAppViewContainer"] > .main {{
-    background-image: url("data:image/jpeg;base64,{img}");
-    background-size: cover;
-    background-position: center;
-    }}
-    [data-testid="stHeader"] {{
-    background: rgba(0,0,0,0);
-    }}
-    .animated-text {{
-        font-size: 3rem;
-        font-family: 'Courier New', Courier, monospace;
-        font-weight: bold;
-        animation: colorchange 2s infinite;
-        text-align: center;
-    }}
-    @keyframes colorchange {{
-        0% {{ color: #FF5722; }}
-        25% {{ color: #4CAF50; }}
-        50% {{ color: #FFC107; }}
-        75% {{ color: #00BCD4; }}
-        100% {{ color: #FF5722; }}
-    }}
-    </style>
-    """
-    st.markdown(page_bg_img, unsafe_allow_html=True)
+if __name__ == '__main__':
+    app.run(debug=True)
