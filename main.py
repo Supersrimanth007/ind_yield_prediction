@@ -44,7 +44,8 @@ if predict_button:
     Model = pickle.load(open('ind_yield.pkl', 'rb'))
     
     # Make prediction
-    prediction = Model.predict([Features])[0]
+    prediction = Model.predict([Features])
+    prediction_value = float(prediction[0])  # Ensure the prediction is a float
     
     gif = get_img_as_base64("crop.gif")
     page_bg_gif = f"""
@@ -66,16 +67,12 @@ if predict_button:
         text-align: center;
     }}
     @keyframes colorchange {{
-        0% {{ color: #FF5722; }}
-        25% {{ color: #4CAF50; }}
-        50% {{ color: #FFC107; }}
-        75% {{ color: #00BCD4; }}
-        100% {{ color: #FF5722; }}
+        100% {{ color: #f4f0ec  ; }}
     }}
     </style>
     """
     st.markdown(page_bg_gif, unsafe_allow_html=True)
-    st.markdown(f"<h2 class='animated-text'>Predicted Crop Yield: {prediction:.2f} kg</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 class='animated-text'>Predicted Crop Yield: Srimanth loves Rithika {prediction_value:.2f} Times</h2>", unsafe_allow_html=True)
     
     if back_button:
         st.experimental_rerun()
@@ -100,11 +97,7 @@ else:
         text-align: center;
     }}
     @keyframes colorchange {{
-        0% {{ color: #FF5722; }}
-        25% {{ color: #4CAF50; }}
-        50% {{ color: #FFC107; }}
-        75% {{ color: #00BCD4; }}
-        100% {{ color: #FF5722; }}
+        100% {{ color: #f4f0ec  ; }}
     }}
     </style>
     """
