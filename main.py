@@ -72,7 +72,7 @@ if predict_button:
     </style>
     """
     st.markdown(page_bg_gif, unsafe_allow_html=True)
-    st.markdown(f"<h2 class='animated-text'>Predicted Crop Yield: Srimanth loves Rithika {prediction_value:.2f} Times</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 class='animated-text'>Predicted Crop Yield: {prediction_value:.2f} Times</h2>", unsafe_allow_html=True)
     
     if back_button:
         st.experimental_rerun()
